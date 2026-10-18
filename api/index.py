@@ -1,4 +1,4 @@
-import json, os, re, threading, time
+import json, os, re, threading, time, traceback
 from collections import defaultdict
 from datetime import date, datetime
 from urllib.parse import urlencode, unquote
@@ -162,4 +162,7 @@ def health(): return {"ok":True}
 @app.post("/api/index")
 def answer(body: Question):
     try: return {"answer":answer_question(body.question)}
-    except Exception as exc: raise HTTPException(status_code=503, detail="Ledger data unavailable: "+type(exc).__name__)
+    except Exception as exc:
+        print("LEDGER_ANSWER_FAILURE:", repr(exc))
+        traceback.print_exc()
+        raise HTTPException(status_code=503, detail="Ledger data unavailable: "+type(exc).__name__)
