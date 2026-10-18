@@ -132,6 +132,12 @@ def answer_question(original):
         if any(w in q for w in ("how many","count","number of")): return str(len(matches))
         return f"There were {len(matches)} void or cancelled orders totaling ${cash(sum(usd(x,rates) for x in matches)):.2f} USD."
     paid = [x for x in rows if str(x.get("status","")).lower() == "paid"]
+    # Customer-count questions ask for unique customers, not the number of orders.
+    customer_count_intent = any(w in q for w in ("customer", "customers", "buyer", "buyers", "people"))
+    distinct_intent = any(w in q for w in ("distinct", "different", "unique", "at least one"))
+    if customer_count_intent and (distinct_intent or any(w in q for w in ("how many", "count", "number of"))):
+        unique_customers = {str(x.get("customer", "")).strip().casefold() for x in paid if str(x.get("customer", "")).strip()}
+        return str(len(unique_customers))
     if any(w in q for w in ("how many","count","number of orders","number of transactions")): return str(len(paid))
     if any(w in q for w in ("quantity","units sold","how many items","number of units")): return str(sum(int(x.get("qty",0) or 0) for x in paid))
     field = "product" if any(w in q for w in ("by product","product breakdown","which product","best-selling","best selling")) else ("customer" if any(w in q for w in ("by customer","customer breakdown","which customer")) else ("region" if any(w in q for w in ("by region","region breakdown","which region")) else None))
