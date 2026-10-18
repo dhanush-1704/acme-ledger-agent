@@ -1,7 +1,7 @@
 import json, os, re, threading, time
 from collections import defaultdict
 from datetime import date, datetime
-from urllib.parse import urlencode
+from urllib.parse import urlencode, unquote
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 from fastapi import FastAPI, HTTPException
@@ -19,7 +19,7 @@ def request_path(path):
     sign = os.environ.get("LEDGER_QUIZ_SIGN")
     if not sign:
         raise RuntimeError("Set LEDGER_QUIZ_SIGN in deployment environment variables")
-    query = urlencode({"email": os.environ.get("LEDGER_EMAIL", "23f2001912@ds.study.iitm.ac.in"), "quizSign": sign, "questionId": "q-ledger-agent-server", "path": path})
+    query = urlencode({"email": os.environ.get("LEDGER_EMAIL", "23f2001912@ds.study.iitm.ac.in"), "quizSign": unquote(sign), "questionId": "q-ledger-agent-server", "path": path})
     url = "https://exam.sanand.workers.dev/questionData?" + query
     with urlopen(Request(url, headers={"User-Agent": "AcmeLedgerAgent/1.0"}), timeout=9) as resp:
         raw = resp.read().decode("utf-8")
